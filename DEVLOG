@@ -1,2 +1,5 @@
 12/31/2017: 6:47am
-	    First real progress on Stage A. Excessive time wasted realizing that the return value from SHA1() wasn't null-terminated, but flog is now capable of creating blobs exactly the way it's supposed to. Next step is to implement the staging area, but might not begin work on that until Jan 2 bc of college apps.
+	First real progress on Stage A. Excessive time wasted realizing that the return value from SHA1() wasn't null-terminated, but flog is now capable of creating blobs exactly the way it's supposed to. Next step is to implement the staging area, but might not begin work on that until Jan 2 bc of college apps.
+
+12/31/2017 4:06pm
+	Cleaned up the overall structure of the code a bit. Top-level 'add' functionality but I didn't implement alphabetical ordering by hashes the way git does. It doesn't really add anything but unnecesary determinism at the cost of potential file corruption without significant error handling. I think I'll implement trees next.
