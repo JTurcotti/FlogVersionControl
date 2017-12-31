@@ -1,0 +1,133 @@
+PROJECT TITLE: FLOG VERSION CONTROL
+
+Developed by Joshua Turcotti
+
+MOTIVATION:
+-Git has superseded SVN as the coding industry's dominant version control system (VCS) because of its efficient, lieghtweight branching and merging, lending it an unparalled advtange in distributed development. Git prioritizes speed effecicency over space effeciency, and acts under the assumption of a large amount of storage is readily available.
+-Git performs individual compression on each file commited from the staging area, the periodically packs the files using delta-compression with a heuristic based on file size and name. The two assumption in this approach are that size of a delta between two files is proportional to difference in their sizes, and that files with different names will have very large deltas. The former is true only when deltas are mostly comprised of only additions or only deletions, e.g. if 500 lines are simply subsituted, then file size diff will be 0 but the delta will be 1000. The latter is mostly correct, but fails to take advantage of the inherent syntactic similarity between code files and the existence of duplicate code, especially common in projects under active development.
+-The solution to these problems is to replace the heuristic with a centroid-based clustering algorithm. Traditionally such algorithms are based on the Euclidean metric, limiting the data sets they can cluster to sets of vectors. We instead choose to establish a metric space on the set of all possible text files (each interpreted as sequences of atomic lines) based on Levenshtein distance, and then generalize the k-means algorithm choosing a distance function based on longest common subsequences within the files. The implementation of both the k-means clustering alogorithm on a general metric space and of the metric itself is detailed in the [ALGORITHMS] section.
+-The goal of this project is to verify that such a metric-based clustering approach to delta-compression will in fact produce greater compression of cumulative file histories with shorter access and search times than the heurisitic approach currently implemented by Git. (See [FINAL STAGE])
+
+
+
+PROJECT OVERVIEW:
+-Flog is a basic version control system with an emphasis on compact storage and efficient merging through mathematical means. Development will occur in several stages, all of which will may realistically not be implemented before the end of the semester.
+      STAGE A: Basic Functionality
+      ~Dependencies: none (initial stage)
+      ~Summary of Functionality: Ability to choose a subset of a filesystem (repository) to track, and then build several parallel histories (branches) of changes (commits) to those files that can be accessed and viewed.
+      ~Implementation Details: State of repository is captured in .flog/objects: each file is stored as a blob object and each directory (including that containing the .flog directory, denoted the 'main') is stored as a tree object. New user changes are staged in the cache after "add" command. When the "commit" command is called, a new commit object is created containing the prior commit's hash, assorted metadata, and a reference to a tree object representing the main and referencing newly created blobs/trees for changed files and prior blobs/trees for unchanged files. The current branch reference is updated to point to the new commit (by default 'master'. When the "checkout" command is called then the HEAD (reference to the prior commit with will parent any newly commited changes) is set to the given branch name, created to reference the same commit as HEAD if it does not already exist.
+      ~Estimated difficulty: moderate (4-5 days of programming)
+
+      STAGE B: Data Compression
+      ~Dependencies: STAGE A
+      ~Summary of Functionality: No additional top-level functionality, but object storage footprint will be vastly reduced.
+      ~Implementation Details: A metric space will be constructed over all commited files and used to perform a clustering analysis (see [ALGORITHMS]), yielding a set of centroids and an assignment of files to each centroid. Each commit will then be stored as a reference to a centroid and a delta to that centroid, necessarily of minimal magnitude. A significant number of furthur commits after packing will trigger rerunning of the clustering algorithm, redefining the entire set centroids and deltas.
+      ~Estimated difficulty: hard (2-4 days of research and 1 week of programming)
+
+      STAGE C: Merging
+      ~Dependendencies: STAGE A
+      ~Summary of Functionality: Ability to perform a 2-parented "merge commit" in which the parallel deltas along two branches will be consolidated.
+      ~Implementation Details: Given two commits, compute the delta from one to their most recent common ancestor, and apply that delta to the second. If one of the two commits is descendent from a prior merge commit, then the most recent common ancestor may not be unique. In this case a recursive merge is performed by merging each common ancestor and then using that as the base for the top-level 3-way merge. If the longest common subsequence does not impose a total ordering on the commits, then a merge conflict arises and must be resolved manually. See [ALGORITHMS] for specifics.
+      ~Estimated difficulty: moderate (2 days of research and 3-5 days of programming)
+
+      STAGE D: Data Integrity
+      ~Dependencies: STAGE A, STAGE C
+      ~Summary of Funcionality: Ability to verify the integrity of all files in a repository.
+      ~Implementation Details: Update the directed acyclic graph (see [STRUCTURES]) of objects to include hashes of own content as well as content of parent to form a Merkle Tree. (see [STRUCTURES])
+      ~Estimated difficulty: easy (1-2 days of programming)
+
+      FINAL STAGE: Massive Dataset Testing
+      ~Dependencies: STAGE A, STAGE B
+      ~Details: Flog will be tested on a subset of Wikipedia articles emulating a filesystem, including their complete version history (often several hundred 'commits'). The same subset of Wikipedia articles will be given to Git, and the compression capacities of each will be compared. Slight adaptations necessary for this procedure to succeed include adding single-file compression to Flog in the exact same manner as Git, replacing periods with newlines in the Wiki articles, and disabling the creation of additional objects by Git that Flog does not generate (tags, references, etc).
+      ~Estimated difficulty: possibly tedious, but easy (4-5 days)
+
+
+
+
+USER INTERFACE:
+-Subset of the same functionality as Linus Torvald's Git containing in toolkit form, at a minimum:
+	"flog init": initialize empty flog repository in current directory
+	"flog add <file>": create blob for <file> and add to index file
+	"flog rm <file>": remove <file> from index
+	"flog commit": create tree from index and write new commit
+	"flog checkout <commit>": set the value of HEAD to <commit>
+	"flog branch <name>": create new branch
+	"flog tag <name> <object>": create new tag
+	"flog gc": compress object files
+
+
+
+
+
+ALGORITHMS:
+	
+	LEVENSHTEIN DELTAS: Given a first and second string, defined as the minimal-length sequence of single character edits (insertions, deletions, or substitutions) required to tranform the first into the second. Computed with Hirschberg's algorithm = O(strlen(char *first), strlen(char *second)), a derivative of the Needleman-Wunsch algorithm via a divide-and-conquer approach. Used to extract deltas for object unpacking and commit merging, as well as serving as the norm for the metric space on text files.
+
+	LONGEST COMMON SUBSEQUENCE: Given two sequences of atoms of length n, return the longest sequence which is a subsequence of both. Computed with the Hunt-Szymanski algorithm = O((r + n) log(n)), where r = number of (i, j) st 0 <= i, j < n and first_str[i] = second_str[j], i.e. worst case O(n^2 log(n)) for two identical strings but average case much closer to O(n log(n)), especially in our usage when it is very rare for lines to be repeated.
+
+	CENTROID-BASED K-WINDOWS CLUSTERING: Given a large set of points in a metric space, we seek to divide the points into regions characterized by a centroid and a radius such that the deltas from points within a region to the centroid of that region is minimized. After an intial choice of k windows, an iterative step is performed consisting of movement, enlargement, and merging. Movement aims to recenter each windows closer to the actual center of its respective region by computing the point minimizing distances to all other points currently within the region, the algorithm terminates when the displacement during this step falls below a certain threshold. Enlargement increases the radius of each window by a predefined scalar until the resultant changed in the quantity of points within the window falls below a certain threshold. Merging evaluates the proportion of shared points in each pair of overlapping windows to total points in their union (two windows (c1, r1) and (c2, r2) overlap iff d(c1, c2) < r1 + r2 by subadditivity), removing one window if the the proportion is above a certain merging threshold (~0.9), performing no action if the proportion in below a certain similarity threshold (~0.05), and otherwise consider the two windows to belong to the same cluster in all future iterations.
+
+	3-WAY MERGE: Given two commits, return a merge of the two that contains all changes made to both. Algorithm begins by backtracking through the DAG to identify shared ancestors between the two commits, and accepting ony those within minimum distance from original commits. If the result is unique then accept it as the base and proceed with the merge, otherwise sequentially merge each common ancestor (recursive step) until a single base commit is established and proceed. Align each original commit along its respective LCS with the base sequence, left-justifying any discprenencies in length. Iterate through each place in the union of the three, constructing the final merged sequence as follows: if a place is occupied in the base sequence then accept its term iff it is present in both originals, and if a place is empty in the base string accept a term from either original iff it exists. If any place admits distinct terms, then a merge conflict occurs and must be resolved manually.
+
+	CRYPTOGRAPHIC HASH FUNCTION: Given an arbitrarily-sized input string, return an output string of predetermined size such that none of the following are feasibly possible: determining the input string, determining that two distinct outputs were generated by similar inputs, discovering distinct inputs with identical output. Computed by the standard SHA-1 function, antiquated in its protection from malicious attacks but satisfactory for protection from accidental data corruption. Implemented in the C library under <openssl/sha.h>.
+
+	FILE COMPRESSION: Given an arbitrarily-size input string, return a smaller output string from which the input can be losslessly redetermined. Computered by the standard zlib utility created by Greg Roelofs and maintained by Mark Adler.
+
+
+
+
+STRUCTURES:
+
+	OBJECTS: A directed acyclic graph of objects with sufficient cryptographic hashing to qualify as a data-secure Merkle Tree. All types contain obey:
+		      <type> = [blob, tree, or commit]
+		      <body> = [different for each type, see below]
+		      <header> = "<type> <sizeof body in bytes>\0"
+		 Stored at path: .flog/objects/(sha1(<header> + <body>))[0: 2]/(sha1(<header> + <body>))[2:] (python notation for string splicing)
+		 Containing: zlib-deflate(<header> + <body>) (see [ALGORITHMS])
+		 
+		 BLOB: Represents the contents of a file:
+		       <body> = <contents>
+		 TREE: Represents a directory containing one or more entries, for each one:
+		       <mode_of_entry> = 10064 for files, 100755 for executables, 120000 for symlinks, 040000 for directories
+		       <body> = ("<mode_of_entry> <type_of_entry> <sha1_of_entry> <name_of_entry>\n") concatenated for all entries
+		 COMMIT: Respresents a state of the repository at a given time:
+		       <time> = seconds since 1970 OR human read-able format
+		       <body> = "tree <sha1_of_main_tree>
+		       	      	parent <sha1_of_parent_commit>
+				author <author_name>\0<author_email>\0<time>
+
+				<commit_message>"
+		 TAG (ANNOTATED): Represents a named reference to an object:
+		       <body> = "object <sha1_of_object>
+		       	      	type <type_of_object>
+				tag <name_of_tag>
+				tagger <tagger_name>\0<tagger_email>\0<time>
+
+				<tag_message>"
+		 	 
+	REFERENCES: Shorthand <name> to be translated to the hash of given commit
+	      -filename for refs to branches: .flog/refs/heads/<name>
+	      -filename for lightweight tags: .flog/refs/tags/<name>
+	      -contents: <sha1_of_commit>
+
+	      Special case: HEAD symbolic ref (see Stage A - Implementation Details)
+	      -filename: .flog/refs/HEAD
+	      -contents: "refs/heads/master" (by default)
+	    
+	INDEX: Contains a list of tracked files and their paths, when "git add" is run a blob is created referenced here, then when "git commit" is run this file is used as a blueprint to construct its tree
+	       -filename: .flog/index
+	       -contains: ("<sha1_of_blob> <path/to/file>\n") for each tracked file
+	       
+
+
+FEATURES PRESENT IN GIT BUT NOT PLANNED FOR FLOG:
+-symlinks and submodules within repositories
+-remotes
+
+
+REFERENCES:
+-Generalizing the k-Windows Clustering Algorithm in Metric Spaces, D.K. Tasoulis, M.N. Vrahatis, May 2006
+-The New k-Windows Algorithm for Improving the k-Means Clustering Algorithm, M.N. Vrahatis, B. Boutsinas, P. Alevizos, G. Pavlides, June 2000
+-A Fast Algorithm for Computing Longest Common Subsequences, J.W. Hunt, T.G. Syzmanski, May 1977
+-A Linear Space Algorithm for Computing Maximal Common Subsequences, D.S. Hirschberg
+-Github Technical Specifications: github.com/git/git/tree/master/Documentation/technical
