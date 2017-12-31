@@ -1,0 +1,2 @@
+12/31/2017: 6:47am
+	    First real progress on Stage A. Excessive time wasted realizing that the return value from SHA1() wasn't null-terminated, but flog is now capable of creating blobs exactly the way it's supposed to. Next step is to implement the staging area, but might not begin work on that until Jan 2 bc of college apps.
