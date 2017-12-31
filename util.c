@@ -14,7 +14,7 @@ int flog_init() {
   }
 }
 
-//returns the path of an object with the given hash, or NULL if none exists
+//returns the path of an object with the given hash in .flog/objects, or NULL if none exists
 char *shapath(char *sha) {
   char dir[3];
   strncpy(dir, sha, 2);
@@ -22,11 +22,11 @@ char *shapath(char *sha) {
   char *path = malloc(64);
   sprintf(path, "%s/%s/%s", OBJECT_LOC, dir, sha + 2);
   if (access(path, R_OK | W_OK))
+    //evaluates to true iff there's a problem reading or writing to path
     return NULL;
   else
     return path;
 }
-  
 
 int dir_exists(char *path) {
   DIR *dir = opendir(path);
@@ -71,6 +71,7 @@ char *read_whole_file(char *filename) {
   return str;
 }
 
+//if file already exists, truncate to 0, otherwise create, then write contents
 int write_whole_file(char *filename, char *contents) {
   FILE *file;
   if (!(file = fopen(filename, "w"))) {
