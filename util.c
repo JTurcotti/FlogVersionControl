@@ -1,4 +1,4 @@
-#include "flog.h"
+#include "plumbing.h"
 
 int flog_init() {
   if (dir_exists(MAIN_LOC)) {
@@ -7,10 +7,24 @@ int flog_init() {
 	     mkdir(OBJECT_LOC, DEFFILEMODE) ||
 	     mkdir(REF_LOC, DEFFILEMODE)) {
     perror("Error creating flog repo");
+    return -1;
   } else {
     printf("Initialized empty flog repo\n");
     return 0;
   }
+}
+
+//returns the path of an object with the given hash, or NULL if none exists
+char *shapath(char *sha) {
+  char dir[3];
+  strncpy(dir, sha, 2);
+  dir[2] = '\0';
+  char *path = malloc(64);
+  sprintf(path, "%s/%s/%s", OBJECT_LOC, dir, sha + 2);
+  if (access(path, R_OK | W_OK))
+    return NULL;
+  else
+    return path;
 }
   
 
@@ -23,6 +37,7 @@ int dir_exists(char *path) {
     return 0;
   } else {
     perror("File system error");
+    exit(1);
   }
 }
 
@@ -40,6 +55,7 @@ char *read_whole_file(char *filename) {
   FILE *file;
   if (!(file = fopen(filename, "r"))) {
     fprintf(stderr, "Error opening input file '%s': %s\n", filename, strerror(errno));
+    return NULL;
   }
 
   fseek(file, 0, SEEK_END);
@@ -59,6 +75,7 @@ int write_whole_file(char *filename, char *contents) {
   FILE *file;
   if (!(file = fopen(filename, "w"))) {
     fprintf(stderr, "Error creating output file '%s': %s\n", filename, strerror(errno));
+    return -1;
   }
 
   int written = fwrite(contents, sizeof(char), strlen(contents), file);
