@@ -1,2 +1,2 @@
-all: blob.c util.c main.c flog.h
-	gcc -o flog blob.c util.c main.c -lssl -lcrypto
+all: object_handler.c util.c main.c flog.h
+	gcc -o flog object_handler.c util.c main.c -lssl -lcrypto
