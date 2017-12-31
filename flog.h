@@ -7,33 +7,21 @@
 #include <limits.h>
 #include <dirent.h>
 #include <errno.h>
+#include <openssl/sha.h>
+#include <assert.h>
 
+
+#define MAIN_LOC ".flog"
 #define OBJECT_LOC ".flog/objects/"
+#define REF_LOC ".flog/refs/"
 #define HASH_REPR_LEN 8
 #define ALLOC_ERR 16
 
-typedef unsigned long hash_t;
+//initialize empty flog repo
+int flog_init();
 
-
-struct blob {
-  hash_t hash;
-  char *name;
-};
-
-//trees not yet implemented
-struct tree {
-  unsigned long hash;
-  char *name;
-  int num_blobs, num_trees;
-  struct blob *blobs;
-  struct tree *trees;
-};
-
-//returns a representation of a hash_t as string
-char *hash_to_string(hash_t hash);
-
-//hashes a character array (non-secure but adequate)
-hash_t hash_function(char *str);
+//160-bit sha hash to null-terminated string
+char *shatos(unsigned char *);
 
 //returns string read from filename
 char *read_whole_file(char *filename);
@@ -42,7 +30,7 @@ char *read_whole_file(char *filename);
 int write_whole_fule(char *filename, char *contents);
 
 //returns new blob with name = filename and hash = hash_function of file 
-struct blob *make_blob(char *filename);
+int make_blob(char *filename);
 
 //tests if directory exists in filesystem
 int dir_exists(char *path);
