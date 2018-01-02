@@ -88,7 +88,7 @@ STRUCTURES:
 		 BLOB: Represents the contents of a file:
 		       <body> = <contents>
 		 TREE: Represents a directory containing one or more entries, for each one:
-		       <mode_of_entry> = 10064 for files, 100755 for executables, 120000 for symlinks, 040000 for directories
+		       <mode_of_entry> = 100644 for files, 100755 for executables, 120000 for symlinks, 040000 for directories
 		       <body> = ("<mode_of_entry> <type_of_entry> <sha1_of_entry> <name_of_entry>\n") concatenated for all entries
 		 COMMIT: Respresents a state of the repository at a given time:
 		       <time> = seconds since 1970 OR human read-able format

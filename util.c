@@ -14,20 +14,18 @@ int flog_init() {
   }
 }
 
-//returns the path of an object with the given hash in .flog/objects, or NULL if none exists
-char *shapath(char *sha) {
+//returns the potential path of an object with the given hash in .flog/objects
+char *shapath(hash_t sha) {
   char dir[3];
   strncpy(dir, sha, 2);
   dir[2] = '\0';
-  char *path = malloc(64);
+  char *path = malloc(MAXPWD_SIZE);
   sprintf(path, "%s/%s/%s", OBJECT_LOC, dir, sha + 2);
-  if (access(path, R_OK | W_OK))
-    //evaluates to true iff there's a problem reading or writing to path
-    return NULL;
-  else
-    return path;
+
+  return path;
 }
 
+//nonzero iff directory exists at path
 int dir_exists(char *path) {
   DIR *dir = opendir(path);
   if (dir) {
@@ -36,13 +34,13 @@ int dir_exists(char *path) {
   } else if (ENOENT == errno) {
     return 0;
   } else {
-    perror("File system error");
+    perror("Error accessing exist dir");
     exit(1);
   }
 }
 
-char *shatos(unsigned char *arr) {
-  char *out = calloc(1, SHA_DIGEST_LENGTH * 2 + 1);
+hash_t shatohash(unsigned char *arr) {
+  hash_t out = calloc(1, SHA_DIGEST_LENGTH * 2 + 1);
   char *itr = out;
   while (itr - out < SHA_DIGEST_LENGTH * 2) {
     itr += sprintf(itr, "%02x", *arr++);
@@ -51,6 +49,7 @@ char *shatos(unsigned char *arr) {
   return out;
 }
 
+//returns contents of file
 char *read_whole_file(char *filename) {
   FILE *file;
   if (!(file = fopen(filename, "r"))) {
