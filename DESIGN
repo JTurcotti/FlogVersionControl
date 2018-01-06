@@ -94,7 +94,7 @@ STRUCTURES:
 		       <time> = seconds since 1970 OR human read-able format
 		       <body> = "tree <sha1_of_main_tree>
 		       	      	parent <sha1_of_parent_commit>
-				author <author_name>\0<author_email>\0<time>
+				author <author_name> <author_email> <time>
 
 				<commit_message>"
 		 TAG (ANNOTATED): Represents a named reference to an object:

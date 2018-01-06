@@ -1,19 +1,5 @@
 #include "plumbing.h"
 
-int flog_init() {
-  if (dir_exists(MAIN_LOC)) {
-    fprintf(stderr, "Flog repo already exists here\n");
-  } else if (mkdir(MAIN_LOC, DEFFILEMODE) ||
-	     mkdir(OBJECT_LOC, DEFFILEMODE) ||
-	     mkdir(REF_LOC, DEFFILEMODE)) {
-    perror("Error creating flog repo");
-    return -1;
-  } else {
-    printf("Initialized empty flog repo\n");
-    return 0;
-  }
-}
-
 //returns the potential path of an object with the given hash in .flog/objects
 char *shapath(hash_t sha) {
   if (DEBUG) printf("finding path for '%s'\n", sha);

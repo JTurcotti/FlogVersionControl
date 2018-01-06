@@ -95,7 +95,7 @@ int index_addblob(hash_t sha, char *path) {
       entry[strlen(entry)-1] = '\0';
 
       //uses gnu sed to alter index file (cheating???)
-      char *cmd;
+      char cmd[MAXIND_SIZE * 2 + ALLOC_ERR * 10];
       sprintf(cmd, "sed -i -e 's/%s/%s/' %s", line, entry, INDEX_LOC);
       int exit = system(cmd);
       if (!exit) {

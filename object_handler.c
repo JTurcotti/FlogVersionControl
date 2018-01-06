@@ -68,3 +68,12 @@ hash_t make_tree(int n_ent, char *ent[][3]) {
 hash_t make_blob(char *filename) { 
   return make_obj("blob", read_whole_file(filename));
 }
+
+hash_t make_commit(hash_t tree, hash_t parent, user_t *author, char *msg) {
+  char *body = malloc(SHA_DIGEST_LENGTH * 2 + MAXUSR_SIZE + MAXMSG_SIZE + ALLOC_ERR);
+
+  sprintf(body, COMMIT_FMT, tree, parent, author->name, author->email, time(NULL), msg);
+
+  return make_obj("commit", body);
+}
+  
