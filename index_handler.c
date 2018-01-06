@@ -98,7 +98,7 @@ int index_addblob(hash_t sha, char *path) {
       char cmd[MAXIND_SIZE * 2 + ALLOC_ERR * 10];
       sprintf(cmd, "sed -i -e 's/%s/%s/' %s", line, entry, INDEX_LOC);
       int exit = system(cmd);
-      if (!exit) {
+      if (!exit && DEBUG) {
 	printf("Successfully updated '%s' with blob '%s'\n", path, sha);
       }
       return exit;
@@ -107,6 +107,6 @@ int index_addblob(hash_t sha, char *path) {
   }
   
   fwrite(entry, sizeof(char), strlen(entry), index);
-  printf("Succesfully added blob '%s' to .flog/index\n", sha);
+  if (DEBUG) printf("Succesfully added blob '%s' to .flog/index\n", sha);
   return 0;
 }

@@ -43,13 +43,14 @@ typedef struct user_t {
 #define MAXMSG_SIZE 512 //max size of commit message
 #define MAXTYP_SIZE 8 //max size of obj type
 #define MAXUSR_SIZE 64 //max length of user name and email (each)
+#define MAXLOG_SIZE 4096 //max size of flog log
 
 //define format of storage files
 #define OBJ_FMT "%s %lu %s" //type, size, body
 #define INDEXLN_FMT "%s %s %s\n" //mode, type, hash, path
 #define INDEXLN_SCAN "%s %s %s" //alt form for fscanf arg
 #define TREELN_FMT "%s %s %s\n" //mode, type, hash, name
-#define COMMIT_FMT "tree %s\nparent %s\nauthor %s %s %ld\n\n%s" //tree, parent, name, email, time, message
+#define COMMIT_FMT "tree %s\nparent %s\nauthor %s %s\t%s\n%s" //tree, parent, name, email, time, message
 
 //allowable modes for tracked files
 #define FILE_MD "100644"
@@ -61,3 +62,19 @@ typedef struct user_t {
 #define EBLOB_EXIST "472860d34f7d0490d0a84832f833f9621ed4beee"
 //used as parent for initial commit
 #define ROOT_COMMIT "1885e0933b6415fa35e639ddb5da5962b4542f6e"
+
+
+//Used for formatting:
+#define HORIZ_RULE ANSI_TITLE "_____________________________________________" ANSI_COLOR_RESET
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+#define ANSI_COMMIT ANSI_COLOR_YELLOW
+#define ANSI_OBJECT ANSI_COLOR_CYAN
+#define ANSI_TITLE  ANSI_COLOR_GREEN
+

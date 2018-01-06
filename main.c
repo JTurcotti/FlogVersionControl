@@ -6,8 +6,13 @@ int main(int argc, char *argv[]) {
     exit(1);
   } else if (!strcmp(argv[1], "init")) {
     flog_init();
+  } else if (!strcmp(argv[1], "log")) {
+    flog_log();
   } else if (!strcmp(argv[1], "commit")) {
-    flog_commit(NULL);
+    if (argc >= 3)
+      flog_commit(argv[2]);
+    else
+      flog_commit(NULL);
   } else if (!strcmp(argv[1], "add")) {
     if (argc < 3) {
       fprintf(stderr, "Insufficient arguments\n");

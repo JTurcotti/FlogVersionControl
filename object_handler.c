@@ -41,7 +41,7 @@ hash_t make_obj(char *type, char *body) {
     return NULL;
   } else {
     write_whole_file(shapath(sha), body);
-    printf("Succesfully wrote %s '%s' to .flog/objects/\n", type, sha);
+    if (DEBUG) printf("Succesfully wrote %s '%s' to .flog/objects/\n", type, sha);
     return sha;
   }
 }
@@ -72,7 +72,8 @@ hash_t make_blob(char *filename) {
 hash_t make_commit(hash_t tree, hash_t parent, user_t *author, char *msg) {
   char *body = malloc(SHA_DIGEST_LENGTH * 2 + MAXUSR_SIZE + MAXMSG_SIZE + ALLOC_ERR);
 
-  sprintf(body, COMMIT_FMT, tree, parent, author->name, author->email, time(NULL), msg);
+  time_t timer = time(NULL);
+  sprintf(body, COMMIT_FMT, tree, parent, author->name, author->email, asctime(localtime(&timer)), msg);
 
   return make_obj("commit", body);
 }

@@ -71,3 +71,39 @@ int write_whole_file(char *filename, char *contents) {
 
   return written;
 }
+
+hash_t headsha() {
+  if (access(HEAD_LOC, R_OK)) {
+    perror("Error accessing HEAD");
+  } else {
+    return read_whole_file(read_whole_file(HEAD_LOC));
+  }
+}
+
+hash_t get_parent(hash_t commit) {
+  char *commit_body = read_whole_file(shapath(commit));
+  char *parent_line, *parent_sha;
+
+  if (!strtok(commit_body, "\n") || !(parent_line = strtok(NULL, "\n")) ||
+      !strtok(parent_line, "  ") || !(parent_sha  = strtok(NULL, "  "))) {
+    perror("Error parsing commit file");
+  } else {
+    return parent_sha;
+  }
+}
+
+hash_t get_tree(hash_t commit) {
+  char *commit_body = read_whole_file(shapath(commit));
+  char *tree_line, *tree_sha;
+
+  if (!(tree_line = strtok(commit_body, "\n")) ||
+      !(tree_sha  = strtok(tree_line,   "  "))) {
+    perror("Error parsing commit file");
+  } else {
+    return tree_sha;
+  }
+}
+      
+	
+  
+

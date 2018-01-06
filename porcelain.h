@@ -10,3 +10,6 @@ int flog_add(char *filename);
 
 //create commit from index
 int flog_commit(char *msg);
+
+//print log from HEAD back
+int flog_log();

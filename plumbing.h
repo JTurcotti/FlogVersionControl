@@ -31,3 +31,10 @@ int index_addblob(hash_t sha, char *path);
 
 //return zero iff unable to access
 int dir_exists(char *path);
+
+//returns sha of most recent commit
+hash_t headsha();
+
+//get info from commit
+hash_t get_parent(hash_t commit);
+hash_t get_tree(hash_t commit);
