@@ -3,3 +3,6 @@
 
 12/31/2017 4:06pm
 	Cleaned up the overall structure of the code a bit. Top-level 'add' functionality but I didn't implement alphabetical ordering by hashes the way git does. It doesn't really add anything but unnecesary determinism at the cost of potential file corruption without significant error handling. I think I'll implement trees next.
+
+1/6/2017 6:00pm
+	 Lot's of progress. Adding, commiting, and viewing commit log all working without discovered bugs, and I even added ANSI colors! Next step will be checkout commands, then probably branching.
