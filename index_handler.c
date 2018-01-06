@@ -83,6 +83,27 @@ int index_addblob(hash_t sha, char *path) {
       printf("Blob '%s' already present in .flog/index\n", sha);
       return 1;
     }
+
+    //check if an object representing a file at path already exists
+    char *line_path;
+    if (!strtok(strdup(line), " \n") || !strtok(NULL, " \n") || !(line_path = strtok(NULL, " \n"))) {
+      //strtok returns !=0
+      perror("Error parsing index line");
+    } else if (!strcmp(path, line_path)) {
+      //eliminate newlines
+      line[strlen(line) - 1] = '\0';
+      entry[strlen(entry)-1] = '\0';
+
+      //uses gnu sed to alter index file (cheating???)
+      char *cmd;
+      sprintf(cmd, "sed -i -e 's/%s/%s/' %s", line, entry, INDEX_LOC);
+      int exit = system(cmd);
+      if (!exit) {
+	printf("Successfully updated '%s' with blob '%s'\n", path, sha);
+      }
+      return exit;
+    }
+    
   }
   
   fwrite(entry, sizeof(char), strlen(entry), index);
