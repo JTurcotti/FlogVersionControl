@@ -16,20 +16,35 @@ FILE *index_open() {
 
 
 //creates tree from index and returns hash
-char *index_build() {
+hash_t index_build() {
   //track data to build tree:
   int n_ent = 0;
   char *ent[MAXIND_SIZE][3];
   //recieving addresses for fscanf:
-  char *mode, *hash, *path;
+  char mode[8], hash[SHA_DIGEST_LENGTH * 2 + 1], path[MAXPWD_SIZE];
 
   FILE *index = index_open();
   while (fscanf(index, INDEXLN_SCAN, mode, hash, path) != EOF) {
+
     if (!strchr(path, '/')) {
-      //file in top-level dir
+      ent[n_ent][0] = strdup(mode);
+      ent[n_ent][1] = strdup(hash);
+      ent[n_ent][2] = strdup(path);
+      n_ent++;
     } else {
       //file in subdir
     }
+  }
+
+  if (DEBUG) printf("passing entries to make_tree\n");
+
+  hash_t sha = make_tree(n_ent, ent);
+  if (!strcmp(sha, EBLOB_EXIST)) {
+    //no changes made to index since last write
+    printf("No staged changes to commit\n");
+    return NULL;
+  } else {
+    return sha;
   }
 }   
 

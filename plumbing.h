@@ -18,7 +18,7 @@ int write_whole_fule(char *filename, char *contents);
 hash_t make_blob(char *filename);
 
 //returns sha of newly created tree from entries
-hash_t make_tree(int n_ent, char ***ent);
+hash_t make_tree(int n_ent, char *ent[][3]);
 
 //returns sha of newly created tree from index
 hash_t index_build();

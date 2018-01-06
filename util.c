@@ -16,12 +16,14 @@ int flog_init() {
 
 //returns the potential path of an object with the given hash in .flog/objects
 char *shapath(hash_t sha) {
+  if (DEBUG) printf("finding path for '%s'\n", sha);
   char dir[3];
   strncpy(dir, sha, 2);
   dir[2] = '\0';
   char *path = malloc(MAXPWD_SIZE);
   sprintf(path, "%s/%s/%s", OBJECT_LOC, dir, sha + 2);
 
+  if (DEBUG) printf("found path: '%s'\n", path);
   return path;
 }
 

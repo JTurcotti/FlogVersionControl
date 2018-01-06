@@ -6,6 +6,8 @@ int main(int argc, char *argv[]) {
     exit(1);
   } else if (!strcmp(argv[1], "init")) {
     flog_init();
+  } else if (!strcmp(argv[1], "commit")) {
+    flog_commit(NULL);
   } else if (!strcmp(argv[1], "add")) {
     if (argc < 3) {
       fprintf(stderr, "Insufficient arguments\n");
@@ -15,6 +17,8 @@ int main(int argc, char *argv[]) {
   } else {
     make_blob(argv[1]);
   }
-  return 0;
-    
+  return 0;   
 }
+
+
+

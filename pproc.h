@@ -15,6 +15,9 @@
 //stores SHA1 160 bit hashes as a hexadecimal string
 typedef char* hash_t;
 
+//debugging
+#define DEBUG 0
+
 //define structure of .flog data directory
 #define MAIN_LOC ".flog"
 #define OBJECT_LOC ".flog/objects"
@@ -26,6 +29,7 @@ typedef char* hash_t;
 #define MAXLN_SIZE 256 //max line size for tracked files
 #define MAXPWD_SIZE 64 //max size of a path name
 #define MAXIND_SIZE 64 //max size of index
+#define MAXTYP_SIZE 8 //max size of obj type
 
 //define format of storage files
 #define OBJ_FMT "%s %lu %s" //type, size, body
