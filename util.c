@@ -95,15 +95,20 @@ hash_t get_parent(hash_t commit) {
 hash_t get_tree(hash_t commit) {
   char *commit_body = read_whole_file(shapath(commit));
   char *tree_line, *tree_sha;
-
+  
   if (!(tree_line = strtok(commit_body, "\n")) ||
-      !(tree_sha  = strtok(tree_line,   "  "))) {
+      !strtok(tree_line, "  ") || !(tree_sha  = strtok(NULL, "  "))) {
     perror("Error parsing commit file");
   } else {
     return tree_sha;
   }
 }
-      
-	
+
+//return possible path of branch with given name
+char *branchpath(char *name) {
+  char *path = malloc(MAXPWD_SIZE);
+  return strcat(strcpy(path, BRANCH_LOC), name);
+}
+
   
 

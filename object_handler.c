@@ -77,4 +77,17 @@ hash_t make_commit(hash_t tree, hash_t parent, user_t *author, char *msg) {
 
   return make_obj("commit", body);
 }
-  
+
+
+//creates/restores all files from tree and returns number thereof  
+int tree_build(hash_t tree_sha) {
+  char *tree_body = read_whole_file(shapath(tree_sha));
+  char mode[8], hash[SHA_DIGEST_LENGTH * 2 + 1], path[MAXPWD_SIZE];
+  int n = 0;
+  do {
+    sscanf(tree_body, TREELN_SCAN, mode, hash, path);
+    write_whole_file(path, read_whole_file(shapath(hash)));
+    n++;
+  } while ((tree_body = strchr(tree_body, '\n')) && (strlen(tree_body) > 1));
+  return n;
+}

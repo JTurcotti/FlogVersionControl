@@ -13,3 +13,6 @@ int flog_commit(char *msg);
 
 //print log from HEAD back
 int flog_log();
+
+//restore commit, branch, or ref
+int flog_checkout(char *target);

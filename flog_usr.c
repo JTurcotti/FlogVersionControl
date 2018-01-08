@@ -41,13 +41,13 @@ int flog_commit(char *msg) {
   if (access(HEAD_LOC, R_OK)) {
     //HEAD symbolic ref dne
     hash_t sha = make_commit(tree, ROOT_COMMIT, global_author, msg);
-    write_whole_file(BRANCH_PATH(master), sha);
-    write_whole_file(HEAD_LOC, BRANCH_PATH(master)); printf("Successful initial commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
+    write_whole_file(MASTER_LOC, sha);
+    write_whole_file(HEAD_LOC, MASTER_LOC); printf("Successful initial commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
     return 0;
   } else {
     hash_t parent_sha = headsha();
     hash_t sha = make_commit(tree, parent_sha, global_author, msg);
-    write_whole_file(BRANCH_PATH(master), sha);
+    write_whole_file(MASTER_LOC, sha);
     printf("Successful commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
   }
   
@@ -68,4 +68,22 @@ int flog_log() {
 
   printf(ANSI_TITLE "Commit History" ANSI_COLOR_RESET ":\n\n%s", output1);
 }
-  
+
+//accepts HEAD, branch name, or commit hash, returns number of files checked out
+int flog_checkout(char *target) {
+  char *commit_sha;
+
+  if (!strcmp(target, "HEAD")) {
+    commit_sha = headsha();
+  } else if (!access(branchpath(target), F_OK)) {
+    commit_sha = read_whole_file(branchpath(target));
+  } else if (!access(shapath(target), F_OK)) {
+    commit_sha = target;
+  } else {
+    fprintf(stderr, "Target %s does not match any branch or commit\n", target);
+    return -1;
+  }
+
+  printf("Restoring working directory to " ANSI_COMMIT "%s" ANSI_COLOR_RESET "\n", commit_sha);
+  return tree_build(get_tree(commit_sha));
+}

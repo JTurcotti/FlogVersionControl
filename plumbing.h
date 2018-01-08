@@ -5,8 +5,9 @@
 //convert 160 bit hash from base 256 to base 16
 hash_t shatohash(unsigned char *);
 
-//returns prospective path for object with given hash
+//returns prospective path
 char *shapath(hash_t sha);
+char *branchpath(char *branch_name);
 
 //returns string read from filename
 char *read_whole_file(char *filename);
@@ -34,6 +35,9 @@ int dir_exists(char *path);
 
 //returns sha of most recent commit
 hash_t headsha();
+
+//restores files from tree into working directory
+int tree_build(hash_t tree);
 
 //get info from commit
 hash_t get_parent(hash_t commit);

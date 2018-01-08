@@ -30,11 +30,10 @@ typedef struct user_t {
 #define OBJECT_LOC ".flog/objects"
 #define REF_LOC ".flog/refs"
 #define BRANCH_LOC ".flog/refs/branches"
+#define MASTER_LOC ".flog/refs/branches/master"
 #define HEAD_LOC ".flog/refs/HEAD"
 #define INDEX_LOC ".flog/index"
 
-#define BRANCH_PATH(NAME) BRANCH_LOC "/" #NAME
-#define MASTER_BR BRANCH_PATH(master)
 //misc constants
 #define ALLOC_ERR 16 //prevent malloc errors
 #define MAXLN_SIZE 256 //max line size for tracked files
@@ -50,6 +49,7 @@ typedef struct user_t {
 #define INDEXLN_FMT "%s %s %s\n" //mode, type, hash, path
 #define INDEXLN_SCAN "%s %s %s" //alt form for fscanf arg
 #define TREELN_FMT "%s %s %s\n" //mode, type, hash, name
+#define TREELN_SCAN "%s %s %s" //alt form for sscanf arg
 #define COMMIT_FMT "tree %s\nparent %s\nauthor %s %s\t%s\n%s" //tree, parent, name, email, time, message
 
 //allowable modes for tracked files
