@@ -8,6 +8,11 @@ int main(int argc, char *argv[]) {
     flog_init();
   } else if (!strcmp(argv[1], "log")) {
     flog_log();
+  } else if (!strcmp(argv[1], "branch")) {
+    if (argc >= 3)
+      flog_branch(argv[2]);
+    else
+      flog_branch_list();
   } else if (!strcmp(argv[1], "commit")) {
     if (argc >= 3)
       flog_commit(argv[2]);

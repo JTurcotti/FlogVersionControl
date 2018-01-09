@@ -85,7 +85,9 @@ int tree_build(hash_t tree_sha) {
   char mode[8], hash[SHA_DIGEST_LENGTH * 2 + 1], path[MAXPWD_SIZE];
   int n = 0;
   do {
+    if (*tree_body == '\n') tree_body++;
     sscanf(tree_body, TREELN_SCAN, mode, hash, path);
+    if (DEBUG) printf("Creating %s from hash %s, mode %s\nbody: '%s'\n", path, hash, mode, tree_body);
     write_whole_file(path, read_whole_file(shapath(hash)));
     n++;
   } while ((tree_body = strchr(tree_body, '\n')) && (strlen(tree_body) > 1));

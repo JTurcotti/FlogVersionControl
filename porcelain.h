@@ -16,3 +16,9 @@ int flog_log();
 
 //restore commit, branch, or ref
 int flog_checkout(char *target);
+
+//create branch
+int flog_branch(char *name);
+
+//list branches
+int flog_branch_list();

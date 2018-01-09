@@ -107,7 +107,7 @@ hash_t get_tree(hash_t commit) {
 //return possible path of branch with given name
 char *branchpath(char *name) {
   char *path = malloc(MAXPWD_SIZE);
-  return strcat(strcpy(path, BRANCH_LOC), name);
+  return strcat(strcat(strcpy(path, BRANCH_LOC), "/"), name);
 }
 
   
