@@ -9,10 +9,7 @@ int flog_add(char *filename) {
   if (!(sha = make_blob(filename))) {
     fprintf(stderr, "Add operation failed\n");
     return -1;
-  } else if (!strcmp(sha, EBLOB_EXIST)) {
-    fprintf(stderr, "File '%s' matches preexisting blob; no changes to add\n", filename);
-  } else {
-    index_addblob(sha, filename);
+  } else if (!index_addblob(sha, filename)) {
     printf("Created blob " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", sha);
   }
 }
@@ -61,6 +58,17 @@ int flog_branch(char *name) {
     printf("Created branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", name);
   }
 }
+
+int flog_branch_delete(char *name) {
+  if (access(branchpath(name), F_OK)) {
+    printf("Branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET " does not exist\n", name);
+  } else if (remove(branchpath(name))) {
+    perror("Error removing branch file");
+  } else {
+    printf("Removed branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", name);
+  }
+}
+      
 
 int flog_branch_list() {
   DIR *dir = opendir(BRANCH_LOC);

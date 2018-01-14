@@ -15,38 +15,103 @@ FILE *index_open() {
 }
 
 
+//helper function for index_build to recurse, complicated af
+//index: index file; tracked_dir: list of dirs already built; n_dir: number thereof; ent: ent[0] temp storage, rows ent[1...] stores data to build tree; n_dir: number thereof; dirpath: recursive indicator, which dir->tree is currently being built
+hash_t index_build_layer(FILE *index, int *n_dir, char **tracked_dir, char *dirpath, int *n_ent, char ***ent) {
+
+  //read each entry into ent[0]: mode hash path
+  while (fscanf(index, INDEXLN_SCAN, ent[0][0], ent[0][1], ent[0][2]) != EOF) {
+    printf("start\n");
+    //path adds a leading '/'
+    char *path = strcat(strcat(malloc(MAXPWD_SIZE), "/"), ent[0][2]);
+    printf("initial path: '%s'; ", path);
+    char *filename = strrchr(path, '/'); //filename stores everything after last backslash
+    *filename++ = '\0';
+    //previous value of path = new value + '/' + filename
+    printf("dirpath: '%s'; path: '%s'; filename: '%s'; n: %d\n", dirpath, path, filename, *n_ent);
+
+    //tests if dirpath and path agree 
+    if ((!strcmp(path, "") && !strcmp(dirpath, "/")) || !strcmp(path, dirpath)) {
+      //file lies in current dirpath, add to ent
+      (*n_ent)++;
+      ent[*n_ent][0] = strdup(ent[0][0]); //mode
+      ent[*n_ent][1] = strdup(ent[0][1]); //hash
+      ent[*n_ent][2] = strdup(ent[0][2]); //path
+    } else {
+      //increment i through tracked_dir until it encounters path
+      //note that a gauranteed precondition strcmp(path, dirpath) && (strcmp(path, "") || strcmp(dirpath, "/"))
+      
+      if (!strstr(path, dirpath)) {
+	//if path is not a descesndent of dirpath, continue to next
+	continue;
+      }
+      char *pos = path + strlen(dirpath); //points to '/' after dirpath in path
+      while (*pos != '/' && pos - path < strlen(path)) {
+	pos++;
+      } //points to next '/', or end
+      if (*pos == '/') {
+	//if pos points to next '/', end path there
+	*pos = '\0';
+      } //path now contains one dir deeper than dirpath
+
+      int i;
+      for (i=0; i < *n_dir; i++) {
+	if (!strcmp(path, tracked_dir[i])) {
+	  //make sure path not already created
+	  break;
+	}
+      }
+      if (i < *n_dir) {
+	//if path is already tracked, continue to next path
+	continue;
+      }
+      
+
+      //add to list of tracked dirs
+      tracked_dir[(*n_dir)++] = path;
+
+      //build tree recursively
+      hash_t sha = index_build_layer(index, n_dir, tracked_dir, path, n_ent, ent);
+      (*ent)++;
+      ent[*n_ent][0] = DIR_MD; //mode (always DIR)
+      ent[*n_ent][1] = sha; //hash
+      ent[*n_ent][2] = path + 1; //path (ignore leading '/')
+    }
+  }
+  
+  printf("passing entries to make_tree '%s'\n", dirpath);
+  
+  hash_t sha = make_tree(*n_ent, ent + 1);
+
+  return sha;
+}
+ 
+
 //creates tree from index and returns hash
 hash_t index_build() {
   //track data to build tree:
   int n_ent = 0;
-  char *ent[MAXIND_SIZE][3];
-  //recieving addresses for fscanf:
-  char mode[8], hash[SHA_DIGEST_LENGTH * 2 + 1], path[MAXPWD_SIZE];
-
-  FILE *index = index_open();
-  while (fscanf(index, INDEXLN_SCAN, mode, hash, path) != EOF) {
-
-    if (!strchr(path, '/')) {
-      ent[n_ent][0] = strdup(mode);
-      ent[n_ent][1] = strdup(hash);
-      ent[n_ent][2] = strdup(path);
-      n_ent++;
-    } else {
-      //file in subdir
+  char ***ent = (char ***) malloc(sizeof(char **) * MAXIND_SIZE);
+  int i, j;
+  for (i=0; i < MAXIND_SIZE; i++) {
+    ent[i] = (char **) malloc(sizeof(char *) * 3);
+    for (j=0; j < 3; j++) {
+      ent[i][j] = (char *) malloc(sizeof(char) * MAXPWD_SIZE);
     }
   }
 
-  if (DEBUG) printf("passing entries to make_tree\n");
-
-  hash_t sha = make_tree(n_ent, ent);
-  if (!strcmp(sha, EBLOB_EXIST)) {
-    //no changes made to index since last write
-    printf("No staged changes to commit\n");
-    return NULL;
-  } else {
-    return sha;
+  char **tracked_dir = (char **) malloc(sizeof(char *) * MAXDIR_COUNT);
+  int k;
+  for (k=0; k < MAXDIR_COUNT; k++) {
+    tracked_dir[k] = malloc(sizeof(char) * MAXPWD_SIZE);
   }
-}   
+  tracked_dir[0] = "/";
+  int n_dir = 1;
+  
+  FILE *index = index_open();
+
+  return index_build_layer(index, &n_dir, tracked_dir, "/", &n_ent, ent);
+}
 
 //indexes a blob called sha representing a file at path and returns 0 if not already present, 1 if already present (this is NOT an error case), or fails and returns -1
 int index_addblob(hash_t sha, char *path) {
@@ -79,8 +144,7 @@ int index_addblob(hash_t sha, char *path) {
   //check each existant line against entry
   while (fgets(line, MAXLN_SIZE, index)) {
     if (!strcmp(line, entry)) {
-      //this should never happen unless someone deletes object files manually
-      printf("Blob '%s' already present in .flog/index\n", sha);
+      printf("No changes made to file '%s'\n", path);
       return 1;
     }
 

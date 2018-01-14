@@ -47,7 +47,7 @@ hash_t make_obj(char *type, char *body) {
 }
     
 //entries has dimensions *char[num_entries][3], where for any i<num_entries char[i] = {char *mode, char *sha, char *name}
-hash_t make_tree(int n_ent, char *ent[][3]) {
+hash_t make_tree(int n_ent, char ***ent) {
   //INIT BODY
   if (DEBUG) printf("constructing tree\n");
   char *body = calloc((SHA_DIGEST_LENGTH + MAXPWD_SIZE + MAXTYP_SIZE + ALLOC_ERR), n_ent); //accts for null-terminators and newlines

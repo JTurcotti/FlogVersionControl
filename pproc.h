@@ -43,6 +43,7 @@ typedef struct user_t {
 #define MAXTYP_SIZE 8 //max size of obj type
 #define MAXUSR_SIZE 64 //max length of user name and email (each)
 #define MAXLOG_SIZE 4096 //max size of flog log
+#define MAXDIR_COUNT 64 //max number of subdirs in a repo
 
 //define format of storage files
 #define OBJ_FMT "%s %lu %s" //type, size, body

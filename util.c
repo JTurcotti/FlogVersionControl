@@ -58,13 +58,40 @@ char *read_whole_file(char *filename) {
   return str;
 }
 
+//recursively create dir (ie if parent dne, make parent etc)
+int mkdir_r(char *dir_path) {
+  char *cmd = strcat(strcat(malloc(MAXPWD_SIZE), "mkdir -p "), dir_path);
+  return system(cmd);
+
+  //kinda cheating, should go back and finish implementing:
+  /*  char *dir_dup = strdup(dir_path);
+  char *filename = strrchr(dir_dup, '\n');
+  (*filename)++ = '\0';
+  
+  if (!filename) {
+    return mkdir(dir_path, 666);
+    } else {//*/
+}
+    
+
 //if file already exists, truncate to 0, otherwise create, then write contents
 int write_whole_file(char *filename, char *contents) {
+  printf("writing file '%s'\n", filename);
+  if (strchr(filename, '/')) {
+    //file is not in repo root
+    char *dir_path = strdup(filename);
+    *strrchr(dir_path, '/') = '\0';
+    if (!dir_exists(dir_path)) {
+      printf("but first creating parent '%s'\n", dir_path);
+      mkdir_r(dir_path);
+    }
+  }
+  
   FILE *file;
   if (!(file = fopen(filename, "w"))) {
     fprintf(stderr, "Error creating output file '%s': %s\n", filename, strerror(errno));
     return -1;
-  }
+   }
 
   int written = fwrite(contents, sizeof(char), strlen(contents), file);
   fclose(file);
@@ -110,5 +137,17 @@ char *branchpath(char *name) {
   return strcat(strcat(strcpy(path, BRANCH_LOC), "/"), name);
 }
 
+//returns hash of object with given type and body
+hash_t hashobj(char *type, char *body) {
+  size_t s_body = strlen(body);
+  //holds header and body:
+  char obj[s_body + MAXPWD_SIZE];
+  sprintf(obj, OBJ_FMT, type, s_body, body);
   
+  //hashes the generated obj and converts string from base 256 to base 16
+  hash_t sha = shatohash(SHA1(obj, strlen(obj), NULL));
 
+  if (DEBUG) printf("Successfully hashed: '%s'\n", sha);
+
+  return sha;
+}

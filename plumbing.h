@@ -19,7 +19,7 @@ int write_whole_fule(char *filename, char *contents);
 hash_t make_blob(char *filename);
 
 //returns sha of newly created tree from entries
-hash_t make_tree(int n_ent, char *ent[][3]);
+hash_t make_tree(int n_ent, char ***ent);
 
 //returns sha of newly create commit
 hash_t make_commit(hash_t tree, hash_t parent, user_t *author, char *msg);
