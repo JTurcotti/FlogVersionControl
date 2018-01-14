@@ -81,15 +81,18 @@ hash_t make_commit(hash_t tree, hash_t parent, user_t *author, char *msg) {
 
 //creates/restores all files from tree and returns number thereof  
 int tree_build(hash_t tree_sha) {
+  printf("Starting to build tree %s\n", tree_sha);
   char *tree_body = read_whole_file(shapath(tree_sha));
+  printf("read body\n");
   char mode[8], hash[SHA_DIGEST_LENGTH * 2 + 1], path[MAXPWD_SIZE];
   int n = 0;
   do {
-    if (*tree_body == '\n') tree_body++;
+    if (*tree_body == '\n') tree_body++; //account for leadding newlines
     sscanf(tree_body, TREELN_SCAN, mode, hash, path);
-    if (DEBUG) printf("Creating %s from hash %s, mode %s\nbody: '%s'\n", path, hash, mode, tree_body);
+    printf("Creating %s from hash %s, mode %s\nbody: '%s'\n", path, hash, mode, tree_body);
     write_whole_file(path, read_whole_file(shapath(hash)));
+    printf("created!\n");
     n++;
-  } while ((tree_body = strchr(tree_body, '\n')) && (strlen(tree_body) > 1));
+  } while ((tree_body = strchr(tree_body, '\n')) && (strlen(tree_body) > 1)); //while another line left and that line is not a single newline
   return n;
 }
