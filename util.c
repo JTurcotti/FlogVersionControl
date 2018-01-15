@@ -60,7 +60,7 @@ char *read_whole_file(char *filename) {
 
 //recursively create dir (ie if parent dne, make parent etc)
 int mkdir_r(char *dir_path) {
-  char *cmd = strcat(strcat(malloc(MAXPWD_SIZE), "mkdir -p "), dir_path);
+  char *cmd = strcat(strcat(calloc(sizeof(char), MAXPWD_SIZE + ALLOC_ERR), "mkdir -p "), dir_path);
   return system(cmd);
 
   //kinda cheating, should go back and finish implementing:
@@ -80,10 +80,12 @@ int write_whole_file(char *filename, char *contents) {
   if (strchr(filename, '/')) {
     //file is not in repo root
     char *dir_path = strdup(filename);
-    *strrchr(dir_path, '/') = '\0';
+    *strrchr(dir_path, '/') = '\0'; //eliminate filename from path eg "1/2/a.txt -> 1/2"
     if (!dir_exists(dir_path)) {
       printf("but first creating parent '%s'\n", dir_path);
-      mkdir_r(dir_path);
+      if (mkdir_r(dir_path)) {
+	perror("Error creating parent");
+      }
     }
   }
   

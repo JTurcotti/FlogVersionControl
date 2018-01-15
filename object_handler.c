@@ -4,26 +4,14 @@
 //writes obj to .flog/objects with given type and body, called from all make_<type>, returns hash of obj or EBLOB_EXIST if already exists
 hash_t make_obj(char *type, char *body) {
   if (DEBUG) printf("Making %s with body: '%s'\n", type, body);
-  
-  
-  size_t s_body = strlen(body);
-  //holds header and body:
-  char obj[s_body + MAXPWD_SIZE];
-  sprintf(obj, OBJ_FMT, type, s_body, body);
 
-  if (DEBUG) printf("Obj content generated: '%s'\n", obj);
-  
-  //hashes the generated obj and converts string from base 256 to base 16
-  hash_t sha = shatohash(SHA1(obj, strlen(obj), NULL));
+  hash_t sha = hashobj(type, body);
 
-  if (DEBUG) printf("Obj successfully hashed: '%s'\n", sha);
-							 
   if (!access(shapath(sha), F_OK)) {
-    //blob already exists
-    if (DEBUG) printf("Obj already exists, aborting\n");
-    return EBLOB_EXIST;
+    //object already exists, we're done!
+    return sha;
   }
-
+  
   //stores first two charactes of hash as dir name, 
   char *dir = malloc(3);
   char *dir_path = malloc(strlen(OBJECT_LOC) + 5);
@@ -79,7 +67,7 @@ hash_t make_commit(hash_t tree, hash_t parent, user_t *author, char *msg) {
 }
 
 
-//creates/restores all files from tree and returns number thereof  
+//recursively creates/restores all files from tree and returns number thereof, 
 int tree_build(hash_t tree_sha) {
   printf("Starting to build tree %s\n", tree_sha);
   char *tree_body = read_whole_file(shapath(tree_sha));
@@ -88,11 +76,18 @@ int tree_build(hash_t tree_sha) {
   int n = 0;
   do {
     if (*tree_body == '\n') tree_body++; //account for leadding newlines
+    //read line of tree (recurse-level-specific file pointer)
     sscanf(tree_body, TREELN_SCAN, mode, hash, path);
-    printf("Creating %s from hash %s, mode %s\nbody: '%s'\n", path, hash, mode, tree_body);
-    write_whole_file(path, read_whole_file(shapath(hash)));
-    printf("created!\n");
-    n++;
+
+    if (!strcmp(mode, DIR_MD)) {
+      //lines points to subdir, recursively constructed
+      n += tree_build(hash);
+    } else {
+      printf("Creating %s from hash %s, mode %s\nbody: '%s'\n", path, hash, mode, tree_body);
+      write_whole_file(path, read_whole_file(shapath(hash)));
+      printf("created!\n");
+      n++;
+    }
   } while ((tree_body = strchr(tree_body, '\n')) && (strlen(tree_body) > 1)); //while another line left and that line is not a single newline
   return n;
 }
