@@ -50,7 +50,7 @@ hash_t index_build_layer(int *n_dir, char **tracked_dir, char *dirpath) {
       ent[n_ent][0] = strdup(ent[0][0]); //mode
       ent[n_ent][1] = strdup(ent[0][1]); //hash
       ent[n_ent][2] = strdup(ent[0][2]); //path
-      printf("added file %s/%s to %s\n", path, filename, dirpath);
+      if (DEBUG) printf("added file %s/%s to %s\n", path, filename, dirpath);
     } else {
       //increment i through tracked_dir until it encounters path
       //note that a gauranteed precondition strcmp(path, dirpath) && (strcmp(path, "") || strcmp(dirpath, "/"))
@@ -90,7 +90,7 @@ hash_t index_build_layer(int *n_dir, char **tracked_dir, char *dirpath) {
       ent[n_ent][0] = DIR_MD; //mode (always DIR)
       ent[n_ent][1] = strdup(sha); //hash
       ent[n_ent][2] = strdup(path + 1); //path (ignore leading '/')
-      printf("added dir %s to %s\n", path, dirpath);
+      if (DEBUG) printf("added dir %s to %s\n", path, dirpath);
     }
   }
   
@@ -178,3 +178,38 @@ int index_addblob(hash_t sha, char *path) {
   return 0;
 }
 
+
+//updates index to match tree, return number of entries
+int tree_build_index(hash_t tree_sha) {
+  char *index_body = calloc(sizeof(char), MAXIND_SIZE * MAXPWD_SIZE);
+
+  int n = tree_build_index_deep(tree_sha, index_body);
+
+  //remove trailing newline
+  if (index_body[strlen(index_body) - 1] == '\n')
+    index_body[strlen(index_body) - 1] = '\0';
+  
+  write_whole_file(INDEX_LOC, index_body);
+
+  return n;
+}
+
+//recursively creates index entries from tree
+int tree_build_index_deep(hash_t tree_sha, char *index_body) {
+  char *tree_body = read_whole_file(shapath(tree_sha));
+
+  char mode[8], hash[SHA_DIGEST_LENGTH * 2 + 1], path[MAXPWD_SIZE];
+  int n = 0;
+  do {
+    if (*tree_body == '\n') tree_body++;
+    sscanf(tree_body, TREELN_SCAN, mode, hash, path);
+    
+    if (!strcmp(mode, DIR_MD)) {
+      n += tree_build_index_deep(hash, index_body);
+    } else {
+      sprintf(index_body, "%s" INDEXLN_FMT "\n", strdup(index_body), mode, hash, path);
+      n++;
+    }
+  } while ((tree_body = strchr(tree_body, '\n')) && (strlen(tree_body) > 1)); //while another line left and that line is not a single newline
+  return n;
+}

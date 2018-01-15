@@ -135,7 +135,9 @@ int flog_checkout(char *target) {
     return -1;
   }
 
-  //if HEAD points to a commit (not root), then build
-  if (strcmp(commit_sha, ROOT_COMMIT))
+  //if HEAD points to a commit (not root), then build and update index
+  if (strcmp(commit_sha, ROOT_COMMIT)) {
+    tree_build_index(get_tree(commit_sha));
     return tree_build(get_tree(commit_sha));
+  }
 }

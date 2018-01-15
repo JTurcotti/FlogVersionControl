@@ -45,3 +45,6 @@ int tree_build(hash_t tree);
 //get info from commit
 hash_t get_parent(hash_t commit);
 hash_t get_tree(hash_t commit);
+
+//updates index to describe tree with given hash
+int tree_build_inex(hash_t tree_sha);
