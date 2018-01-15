@@ -114,7 +114,7 @@ hash_t headsha() {
     sha = read_whole_file(HEAD_LOC);
   }
 
-  if (access(shapath(sha), F_OK)) {
+  if (strcmp(sha, ROOT_COMMIT) && access(shapath(sha), F_OK)) {
     //does not point to real commit object
     fprintf(stderr, "HEAD points to nonexistant object '%s'\n", sha);
     return NULL;

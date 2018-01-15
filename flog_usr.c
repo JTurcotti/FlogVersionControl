@@ -24,6 +24,10 @@ int flog_init() {
     perror("Error creating flog repo");
     return -1;
   } else {
+
+    write_whole_file(MASTER_LOC, ROOT_COMMIT);
+    write_whole_file(HEAD_LOC, MASTER_LOC);
+    
     printf("Initialized empty flog repo\n");
     return 0;
   }
@@ -35,30 +39,20 @@ int flog_commit(char *msg) {
     exit(1);
   }
 
-  if (access(HEAD_LOC, R_OK)) {
-    //HEAD symbolic ref dne
-    hash_t sha = make_commit(tree, ROOT_COMMIT, global_author, msg);
-    write_whole_file(MASTER_LOC, sha);
-    write_whole_file(HEAD_LOC, MASTER_LOC);
-    printf("Successful initial commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
-    return 0;
+  hash_t parent_sha = headsha();
+  hash_t sha = make_commit(tree, parent_sha, global_author, msg);
+  if (strstr(read_whole_file(HEAD_LOC), BRANCH_LOC)) {
+    //if HEAD points to a branch, then update that branch
+    write_whole_file(read_whole_file(HEAD_LOC), sha);
+    char *branch = strrchr(read_whole_file(HEAD_LOC), '/') + 1;
+    printf("Successful commit " ANSI_COMMIT "%s" ANSI_COLOR_RESET " in branch " ANSI_OBJECT "%s\n" ANSI_COLOR_RESET, sha, branch);
   } else {
-    hash_t parent_sha = headsha();
-    hash_t sha = make_commit(tree, parent_sha, global_author, msg);
-    if (strstr(read_whole_file(HEAD_LOC), BRANCH_LOC)) {
-      //if HEAD points to a branch, then update that branch
-      write_whole_file(read_whole_file(HEAD_LOC), sha);
-      char *branch = strrchr(read_whole_file(HEAD_LOC), '/') + 1;
-      printf("Successful commit " ANSI_COMMIT "%s" ANSI_COLOR_RESET " in branch " ANSI_OBJECT "%s\n" ANSI_COLOR_RESET, sha, branch);
-    } else {
-      //detached HEAD
-      write_whole_file(HEAD_LOC, sha);
-      printf("DETACHED HEAD commit " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, sha);
-    }
-
-    return 0;
+    //detached HEAD
+    write_whole_file(HEAD_LOC, sha);
+    printf("DETACHED HEAD commit " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, sha);
   }
   
+  return 0;
 }
 
 int flog_branch(char *name) {
@@ -71,6 +65,10 @@ int flog_branch(char *name) {
 }
 
 int flog_branch_delete(char *name) {
+  if (!strcmp(name, "master")) {
+    fprintf(stderr, "Cannot delete master branch\n");
+    return -1;
+  }
   if (access(branchpath(name), F_OK)) {
     printf("Branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET " does not exist\n", name);
   } else if (remove(branchpath(name))) {
@@ -137,5 +135,7 @@ int flog_checkout(char *target) {
     return -1;
   }
 
-  return tree_build(get_tree(commit_sha));
+  //if HEAD points to a commit (not root), then build
+  if (strcmp(commit_sha, ROOT_COMMIT))
+    return tree_build(get_tree(commit_sha));
 }
