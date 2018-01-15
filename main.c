@@ -9,26 +9,30 @@ int main(int argc, char *argv[]) {
   } else if (!strcmp(argv[1], "log")) {
     flog_log();
   } else if (!strcmp(argv[1], "branch")) {
-    if (argc >= 3)
+    if (argc >= 4 && !strcmp(argv[2], "-d"))
+      flog_branch_delete(argv[3]);
+    else if (argc >= 3)
       flog_branch(argv[2]);
     else
       flog_branch_list();
   } else if (!strcmp(argv[1], "commit")) {
-    if (argc >= 3)
-      flog_commit(argv[2]);
+    if (argc >= 4 && !strcmp(argv[2], "-m"))
+      flog_commit(argv[3]);
     else
       flog_commit(NULL);
   } else if (!strcmp(argv[1], "checkout")) {
-    if (argc >= 3)
+    if (argc >= 4 && !strcmp(argv[2], "-b")) {
+      flog_branch(argv[3]);
+      flog_checkout(argv[3]);
+    } else if (argc >= 3)
       flog_checkout(argv[2]);
     else
       fprintf(stderr, "Insufficient arguments\n");
   } else if (!strcmp(argv[1], "add")) {
-    if (argc < 3) {
+    if (argc < 3)
       fprintf(stderr, "Insufficient arguments\n");
-    } else {
+    else
       flog_add(argv[2]);
-    }
   } else {
     fprintf(stderr, "Unrecognized command: %s\n", argv[1]);
   }

@@ -20,5 +20,8 @@ int flog_checkout(char *target);
 //create branch
 int flog_branch(char *name);
 
+//delete a branch
+int flog_branch_delete(char *name);
+
 //list branches
 int flog_branch_list();
