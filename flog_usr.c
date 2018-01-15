@@ -141,3 +141,5 @@ int flog_checkout(char *target) {
     return tree_build(get_tree(commit_sha));
   }
 }
+
+int flog_reset(char *target, int level) {}

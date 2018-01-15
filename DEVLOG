@@ -11,4 +11,4 @@
 	 Implemented branching and finished checkout, though the latter allows the user to enter detached head state but doesn't actually account for that state yet (HEAD still points to the tip of whatever branch). Next step is probably to add support for directories in the repo, then move onto the more interesting stuff.
 
 1/15/2018 4:30am
-	  Commit and checkout now support directories.
+	  Commit and checkout now support directories. Next step is to finish up basic git utils, reset, revert, stash probably. And then choose either to start working on merging or compression.
