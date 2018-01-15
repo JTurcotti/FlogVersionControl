@@ -38,7 +38,7 @@ typedef struct user_t {
 #define ALLOC_ERR 16 //prevent malloc errors
 #define MAXLN_SIZE 256 //max line size for tracked files
 #define MAXPWD_SIZE 64 //max size of a path name
-#define MAXIND_SIZE 64 //max size of index line
+#define MAXIND_SIZE 128 //max size of index line
 #define MAXMSG_SIZE 512 //max size of commit message
 #define MAXTYP_SIZE 8 //max size of obj type
 #define MAXUSR_SIZE 64 //max length of user name and email (each)
@@ -47,9 +47,9 @@ typedef struct user_t {
 
 //define format of storage files
 #define OBJ_FMT "%s %lu %s" //type, size, body
-#define INDEXLN_FMT "%s %s %s\n" //mode, type, hash, path
+#define INDEXLN_FMT "%s %s %s\n" //mode, hash, path
 #define INDEXLN_SCAN "%s %s %s" //alt form for fscanf arg
-#define TREELN_FMT "%s %s %s\n" //mode, type, hash, name
+#define TREELN_FMT "%s %s %s\n" //mode, hash, name
 #define TREELN_SCAN "%s %s %s" //alt form for sscanf arg
 #define COMMIT_FMT "tree %s\nparent %s\nauthor %s %s\t%s\n%s" //tree, parent, name, email, time, message
 
