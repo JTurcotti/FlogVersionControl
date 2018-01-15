@@ -9,6 +9,7 @@ hash_t make_obj(char *type, char *body) {
 
   if (!access(shapath(sha), F_OK)) {
     //object already exists, we're done!
+    printf("Blob " ANSI_OBJECT "%s" ANSI_COLOR_RESET " already exists\n", sha);
     return sha;
   }
   

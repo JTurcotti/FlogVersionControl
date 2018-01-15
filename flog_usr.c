@@ -10,7 +10,7 @@ int flog_add(char *filename) {
     fprintf(stderr, "Add operation failed\n");
     return -1;
   } else if (!index_addblob(sha, filename)) {
-    printf("Created blob " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", sha);
+    printf("Added to index blob " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", sha);
   }
 }
 

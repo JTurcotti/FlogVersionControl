@@ -75,7 +75,7 @@ hash_t index_build_layer(int *n_dir, char **tracked_dir, char *dirpath, int *n_e
       //build tree recursively
       printf("calling build layer on dirpath %s\n", path);
       hash_t sha = index_build_layer(n_dir, tracked_dir, path, n_ent, ent);
-      (*ent)++;
+      (*n_ent)++;
       ent[*n_ent][0] = DIR_MD; //mode (always DIR)
       ent[*n_ent][1] = strdup(sha); //hash
       ent[*n_ent][2] = strdup(path + 1); //path (ignore leading '/')
@@ -97,7 +97,7 @@ hash_t index_build() {
   int n_ent = 0;
   char ***ent = (char ***) malloc(sizeof(char **) * MAXIND_SIZE);
   int i, j;
-  for (i=0; i < MAXIND_SIZE; i++) {
+  for (i=0; i < MAXIND_SIZE + 1; i++) {
     ent[i] = (char **) malloc(sizeof(char *) * 3);
     for (j=0; j < 3; j++) {
       ent[i][j] = (char *) malloc(sizeof(char) * MAXPWD_SIZE);
@@ -146,7 +146,7 @@ int index_addblob(hash_t sha, char *path) {
   //check each existant line against entry
   while (fgets(line, MAXLN_SIZE, index)) {
     if (!strcmp(line, entry)) {
-      printf("No changes made to file '%s'\n", path);
+      printf("File '%s' unchanged in index\n", path);
       return 1;
     }
 

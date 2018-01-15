@@ -5,6 +5,9 @@
 //convert 160 bit hash from base 256 to base 16
 hash_t shatohash(unsigned char *);
 
+//returns hash of object with given type and mode
+hash_t hashobj(char *type, char *body);
+
 //returns prospective path
 char *shapath(hash_t sha);
 char *branchpath(char *branch_name);
