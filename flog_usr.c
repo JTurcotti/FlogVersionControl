@@ -39,13 +39,24 @@ int flog_commit(char *msg) {
     //HEAD symbolic ref dne
     hash_t sha = make_commit(tree, ROOT_COMMIT, global_author, msg);
     write_whole_file(MASTER_LOC, sha);
-    write_whole_file(HEAD_LOC, MASTER_LOC); printf("Successful initial commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
+    write_whole_file(HEAD_LOC, MASTER_LOC);
+    printf("Successful initial commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
     return 0;
   } else {
     hash_t parent_sha = headsha();
     hash_t sha = make_commit(tree, parent_sha, global_author, msg);
-    write_whole_file(read_whole_file(HEAD_LOC), sha);
-    printf("Successful commit %s%s%s\n", ANSI_COMMIT, sha, ANSI_COLOR_RESET);
+    if (strstr(read_whole_file(HEAD_LOC), BRANCH_LOC)) {
+      //if HEAD points to a branch, then update that branch
+      write_whole_file(read_whole_file(HEAD_LOC), sha);
+      char *branch = strrchr(read_whole_file(HEAD_LOC), '/') + 1;
+      printf("Successful commit " ANSI_COMMIT "%s" ANSI_COLOR_RESET " in branch " ANSI_OBJECT "%s\n" ANSI_COLOR_RESET, sha, branch);
+    } else {
+      //detached HEAD
+      write_whole_file(HEAD_LOC, sha);
+      printf("DETACHED HEAD commit " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, sha);
+    }
+
+    return 0;
   }
   
 }
@@ -107,7 +118,7 @@ int flog_log() {
   printf(ANSI_TITLE "Commit History" ANSI_COLOR_RESET ":\n\n%s", output1);
 }
 
-//accepts HEAD, branch name, or commit hash, returns number of files checked out
+//accepts branch name returns number of files checked out
 int flog_checkout(char *target) {
   char *commit_sha;
 
@@ -119,7 +130,8 @@ int flog_checkout(char *target) {
     printf("Switched to branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", target);
   } else if (!access(shapath(target), F_OK)) {
     commit_sha = target;
-    printf("Restoring working directory to " ANSI_COMMIT "%s" ANSI_COLOR_RESET ", HEAD is now detached, this is an unsupported state\n", commit_sha);
+    write_whole_file(HEAD_LOC, target);
+    printf("Checked out commit to " ANSI_COMMIT "%s" ANSI_COLOR_RESET ", HEAD is now detached\n", commit_sha);
   } else {
     fprintf(stderr, "Target '%s' does not match any branch or commit\n", target);
     return -1;

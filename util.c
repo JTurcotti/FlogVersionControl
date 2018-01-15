@@ -76,13 +76,13 @@ int mkdir_r(char *dir_path) {
 
 //if file already exists, truncate to 0, otherwise create, then write contents
 int write_whole_file(char *filename, char *contents) {
-  printf("writing file '%s'\n", filename);
+  if (DEBUG) printf("writing file '%s'\n", filename);
   if (strchr(filename, '/')) {
     //file is not in repo root
     char *dir_path = strdup(filename);
     *strrchr(dir_path, '/') = '\0'; //eliminate filename from path eg "1/2/a.txt -> 1/2"
     if (!dir_exists(dir_path)) {
-      printf("but first creating parent '%s'\n", dir_path);
+      if (DEBUG) printf("but first creating parent '%s'\n", dir_path);
       if (mkdir_r(dir_path)) {
 	perror("Error creating parent");
       }
@@ -102,11 +102,26 @@ int write_whole_file(char *filename, char *contents) {
 }
 
 hash_t headsha() {
+  hash_t sha;
+  
   if (access(HEAD_LOC, R_OK)) {
     perror("Error accessing HEAD");
+  } else if (strstr(read_whole_file(HEAD_LOC), BRANCH_LOC)) {
+    //contents of HEAD_LOC represent a branch path
+    sha = read_whole_file(read_whole_file(HEAD_LOC));
   } else {
-    return read_whole_file(read_whole_file(HEAD_LOC));
+    //contents of HEAD_LOC represent a commit sha
+    sha = read_whole_file(HEAD_LOC);
   }
+
+  if (access(shapath(sha), F_OK)) {
+    //does not point to real commit object
+    fprintf(stderr, "HEAD points to nonexistant object '%s'\n", sha);
+    return NULL;
+  } else {
+    return sha;
+  }
+    
 }
 
 hash_t get_parent(hash_t commit) {

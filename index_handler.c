@@ -23,14 +23,14 @@ hash_t index_build_layer(int *n_dir, char **tracked_dir, char *dirpath, int *n_e
 
   //read each entry into ent[0]: mode hash path
   while (fscanf(index, INDEXLN_SCAN, ent[0][0], ent[0][1], ent[0][2]) != EOF) {
-    printf("start\n");
+    if (DEBUG) printf("start\n");
     //path adds a leading '/'
     char *path = strcat(strcat(malloc(MAXPWD_SIZE), "/"), ent[0][2]);
-    printf("initial path: '%s'; ", path);
+    if (DEBUG) printf("initial path: '%s'; ", path);
     char *filename = strrchr(path, '/'); //filename stores everything after last backslash
     *filename++ = '\0';
     //previous value of path = new value + '/' + filename
-    printf("dirpath: '%s'; path: '%s'; filename: '%s'; n: %d\n", dirpath, path, filename, *n_ent);
+    if (DEBUG) printf("dirpath: '%s'; path: '%s'; filename: '%s'; n: %d\n", dirpath, path, filename, *n_ent);
 
     //tests if dirpath and path agree 
     if ((!strcmp(path, "") && !strcmp(dirpath, "/")) || !strcmp(path, dirpath)) {
@@ -39,7 +39,7 @@ hash_t index_build_layer(int *n_dir, char **tracked_dir, char *dirpath, int *n_e
       ent[*n_ent][0] = strdup(ent[0][0]); //mode
       ent[*n_ent][1] = strdup(ent[0][1]); //hash
       ent[*n_ent][2] = strdup(ent[0][2]); //path
-      printf("added file %s/%s to %s\n", path, filename, dirpath);
+      if (DEBUG) printf("added file %s/%s to %s\n", path, filename, dirpath);
     } else {
       //increment i through tracked_dir until it encounters path
       //note that a gauranteed precondition strcmp(path, dirpath) && (strcmp(path, "") || strcmp(dirpath, "/"))
@@ -73,17 +73,17 @@ hash_t index_build_layer(int *n_dir, char **tracked_dir, char *dirpath, int *n_e
       tracked_dir[(*n_dir)++] = path;
 
       //build tree recursively
-      printf("calling build layer on dirpath %s\n", path);
+      if (DEBUG) printf("calling build layer on dirpath %s\n", path);
       hash_t sha = index_build_layer(n_dir, tracked_dir, path, n_ent, ent);
       (*n_ent)++;
       ent[*n_ent][0] = DIR_MD; //mode (always DIR)
       ent[*n_ent][1] = strdup(sha); //hash
       ent[*n_ent][2] = strdup(path + 1); //path (ignore leading '/')
-      printf("added dir %s to %s\n", path, dirpath);
+      if (DEBUG) printf("added dir %s to %s\n", path, dirpath);
     }
   }
   
-  printf("passing entries to make_tree '%s'\n", dirpath);
+  if (DEBUG) printf("passing entries to make_tree '%s'\n", dirpath);
   
   hash_t sha = make_tree(*n_ent, ent + 1);
 
