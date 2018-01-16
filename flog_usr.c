@@ -3,7 +3,6 @@
 user_t data = {"Rasputin", "GrigoriR@kremlin.gov"};
 user_t *global_author = &data;
 
-
 int flog_add(char *filename) {
   hash_t sha;
   if (!(sha = make_blob(filename))) {
@@ -20,6 +19,7 @@ int flog_init() {
   } else if (mkdir(MAIN_LOC, DEFFILEMODE) ||
 	     mkdir(OBJECT_LOC, DEFFILEMODE) ||
 	     mkdir(REF_LOC, DEFFILEMODE) ||
+	     mkdir(TAG_LOC, DEFFILEMODE) ||
 	     mkdir(BRANCH_LOC, DEFFILEMODE)) {
     perror("Error creating flog repo");
     return -1;
@@ -119,16 +119,18 @@ int flog_log() {
 //accepts branch name returns number of files checked out
 int flog_checkout(char *target) {
   char *commit_sha;
-
+  
   if (!strcmp(target, "HEAD")) {
-    commit_sha = headsha(); //actually totally useless
+    commit_sha = headsha();
   } else if (!access(branchpath(target), F_OK)) {
-    commit_sha = read_whole_file(branchpath(target));
-    write_whole_file(HEAD_LOC, branchpath(target));
+    //target is a branch name
+    commit_sha = read_whole_file(branchpath(target)); //get tip
+    write_whole_file(HEAD_LOC, branchpath(target));//move HEAD to tip
     printf("Switched to branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET "\n", target);
   } else if (!access(shapath(target), F_OK)) {
-    commit_sha = target;
-    write_whole_file(HEAD_LOC, target);
+    //target is a commit hash
+    commit_sha = target; 
+    write_whole_file(HEAD_LOC, target); //move HEAD directly to commit
     printf("Checked out commit to " ANSI_COMMIT "%s" ANSI_COLOR_RESET ", HEAD is now detached\n", commit_sha);
   } else {
     fprintf(stderr, "Target '%s' does not match any branch or commit\n", target);
@@ -142,4 +144,42 @@ int flog_checkout(char *target) {
   }
 }
 
-int flog_reset(char *target, int level) {}
+int flog_reset(char *target, int level) {
+  if (!strcmp(target, "HEAD"))
+    target = headsha();
+  else if (!access(branchpath(target), F_OK)) {
+    //target is branch name
+    target = read_whole_file(branchpath(target));
+  }
+  
+  if (level >= 0) {
+    if (access(shapath(target), R_OK)) {
+      //target innaccessible
+      fprintf(stderr, "Target " ANSI_COMMIT "%s" ANSI_COLOR_RESET " is not a valid commit\n", target);
+    }
+    
+    if (strstr(read_whole_file(HEAD_LOC), BRANCH_LOC)) {
+      //HEAD points to branch (attached)
+      write_whole_file(read_whole_file(HEAD_LOC), target); //move branch to target
+      
+      char *branch_name = strrchr(read_whole_file(HEAD_LOC), '/') + 1;
+      
+      printf("Branch " ANSI_OBJECT "%s" ANSI_COLOR_RESET " reset to " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, branch_name, target);
+    } else {
+      //detached HEAD
+      write_whole_file(HEAD_LOC, target);
+      
+      printf("HEAD reset to " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, target);
+    }
+  }
+
+  if (level >= 1) {
+    tree_build_index(get_tree(headsha()));
+    printf("Index restored to " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, headsha());
+  }
+  if (level >= 2) {
+    tree_build(get_tree(headsha()));
+    printf("Working directory restored to " ANSI_COMMIT "%s\n" ANSI_COLOR_RESET, headsha());
+  }
+  return 0;
+}

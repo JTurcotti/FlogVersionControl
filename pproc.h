@@ -30,6 +30,7 @@ typedef struct user_t {
 #define OBJECT_LOC ".flog/objects"
 #define REF_LOC ".flog/refs"
 #define BRANCH_LOC ".flog/refs/branches"
+#define TAG_LOC ".flog/refs/tags"
 #define MASTER_LOC ".flog/refs/branches/master"
 #define HEAD_LOC ".flog/refs/HEAD"
 #define INDEX_LOC ".flog/index"

@@ -106,13 +106,13 @@ STRUCTURES:
 				<tag_message>"
 		 	 
 	REFERENCES: Shorthand <name> to be translated to the hash of given commit
-	      -filename for refs to branches: .flog/refs/heads/<name>
+	      -filename for refs to branches: .flog/refs/branches/<name>
 	      -filename for lightweight tags: .flog/refs/tags/<name>
 	      -contents: <sha1_of_commit>
 
 	      Special case: HEAD symbolic ref (see Stage A - Implementation Details)
 	      -filename: .flog/refs/HEAD
-	      -contents: "refs/heads/master" (by default)
+	      -contents: "refs/branches/master" (by default)
 	    
 	INDEX: Contains a list of tracked files and their paths, when "git add" is run a blob is created referenced here, then when "git commit" is run this file is used as a blueprint to construct its tree
 	       -filename: .flog/index

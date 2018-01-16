@@ -101,6 +101,8 @@ int write_whole_file(char *filename, char *contents) {
   return written;
 }
 
+
+//returns sha of commit HEAD points to
 hash_t headsha() {
   hash_t sha;
   

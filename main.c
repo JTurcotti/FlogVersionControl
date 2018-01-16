@@ -33,6 +33,21 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Insufficient arguments\n");
     else
       flog_add(argv[2]);
+  } else if (!strcmp(argv[1], "reset")) {
+    if (argc < 3)
+      flog_reset("HEAD", 0);
+    else if (!strcmp(argv[2], "--hard"))
+      if (argc >= 4)
+	flog_reset(argv[3], 2);
+      else
+	flog_reset("HEAD", 2);
+    else if (!strcmp(argv[2], "--soft"))
+      if (argc >= 4)
+	flog_reset(argv[3], 1);
+      else
+	flog_reset("HEAD", 1);
+    else
+      flog_reset(argv[2], 0);
   } else {
     fprintf(stderr, "Unrecognized command: %s\n", argv[1]);
   }
