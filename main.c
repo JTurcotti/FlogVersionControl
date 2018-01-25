@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
       flog_add(argv[2]);
   } else if (!strcmp(argv[1], "reset")) {
     if (argc < 3)
-      flog_reset("HEAD", 0);
+      flog_reset("HEAD", 1);
     else if (!strcmp(argv[2], "--hard"))
       if (argc >= 4)
 	flog_reset(argv[3], 2);
@@ -43,11 +43,11 @@ int main(int argc, char *argv[]) {
 	flog_reset("HEAD", 2);
     else if (!strcmp(argv[2], "--soft"))
       if (argc >= 4)
-	flog_reset(argv[3], 1);
+	flog_reset(argv[3], 0);
       else
-	flog_reset("HEAD", 1);
+	flog_reset("HEAD", 0);
     else
-      flog_reset(argv[2], 0);
+      flog_reset(argv[2], 1);
   } else {
     fprintf(stderr, "Unrecognized command: %s\n", argv[1]);
   }
