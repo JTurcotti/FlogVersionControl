@@ -12,3 +12,6 @@
 
 1/15/2018 4:30am
 	  Commit and checkout now support directories. Next step is to finish up basic git utils, reset, revert, stash probably. And then choose either to start working on merging or compression.
+
+1/25/2018 7:00pm
+	  Reset (with --hard and --soft) fully implemented, with accurate and seperate behavior from checkout.
