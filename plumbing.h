@@ -48,3 +48,6 @@ hash_t get_tree(hash_t commit);
 
 //updates index to describe tree with given hash
 int tree_build_inex(hash_t tree_sha);
+
+//returns location of root info dir
+char *flog_dir();

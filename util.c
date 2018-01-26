@@ -170,3 +170,20 @@ hash_t hashobj(char *type, char *body) {
 
   return sha;
 }
+
+//returns the relative pathname of the diretory containing the flog repo (possibly empty string, or "../../../" etc) or NULL if MAXDIR_DEPTH exceeded in search
+//implemented but unused
+char *flog_dir() {
+  char *buffer = calloc(sizeof(char), MAXPWD_SIZE);
+  int layer = MAXDIR_DEPTH;
+  while (!dir_exists(ROOT_NAME)) {
+    strcat(buffer, "../");
+    if (!layer--) {
+      *buffer = '\0';
+      return buffer;
+    }
+  }
+  return buffer;
+}
+
+  

@@ -35,6 +35,21 @@ typedef struct user_t {
 #define HEAD_LOC ".flog/refs/HEAD"
 #define INDEX_LOC ".flog/index"
 
+/*
+unimplemented, designed to allow portable commands within dir structure
+
+//define structure of .flog data directory
+#define ROOT_NAME ".flog"
+#define MAIN_LOC strcat(flog_dir(), ".flog")
+#define OBJECT_LOC strcat(flog_dir(), ".flog/objects")
+#define REF_LOC strcat(flog_dir(),  ".flog/refs")
+#define BRANCH_LOC strcat(flog_dir(), ".flog/refs/branches")
+#define TAG_LOC strcat(flog_dir(), ".flog/refs/tags")
+#define MASTER_LOC strcat(flog_dir(), ".flog/refs/branches/master")
+#define HEAD_LOC strcat(flog_dir(), ".flog/refs/HEAD")
+#define INDEX_LOC strcat(flog_dir(), ".flog/index")
+*/
+
 //misc constants
 #define ALLOC_ERR 16 //prevent malloc errors
 #define MAXLN_SIZE 256 //max line size for tracked files
@@ -45,6 +60,7 @@ typedef struct user_t {
 #define MAXUSR_SIZE 64 //max length of user name and email (each)
 #define MAXLOG_SIZE 4096 //max size of flog log
 #define MAXDIR_COUNT 64 //max number of subdirs in a repo
+#define MAXDIR_DEPTH 8 //max depth of dir-tree in flog repo
 
 //define format of storage files
 #define OBJ_FMT "%s %lu %s" //type, size, body
